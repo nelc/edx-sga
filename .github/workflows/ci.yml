@@ -18,7 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-24.04]
         python-version: ['3.12']
-        edx_branch: ['master', 'open-release/redwood.master', 'open-release/sumac.master']
+        edx_branch: ['master', 'open-release/sumac.master', 'release/teak']
         toxenv: [py312-django32, py312-django42]
 
     steps:
@@ -46,13 +46,14 @@ jobs:
 
       - name: Install tutor
         run: |
-          if [[ "${{ matrix.edx_branch }}" == "open-release/redwood.master" ]]; then
-            pip install tutor==18.2.2
+          if [[ "${{ matrix.edx_branch }}" == "open-release/sumac.master" ]]; then
+            pip install tutor==19.0.0
           elif [[ "${{ matrix.edx_branch }}" == "master" ]]; then
             git clone --branch=main https://github.com/overhangio/tutor.git
             pip install -e "./tutor"
-          else
-            pip install tutor==19.0.0
+          else 
+            # For Teak and more recent branches, Tutor 20 is not out yet, so running on master for teak as well
+            git clone --branch=main https://github.com/overhangio/tutor.git
           fi
 
       - name: Set up tutor with edx-platform
