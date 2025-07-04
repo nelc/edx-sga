@@ -1,5 +1,5 @@
 /* Javascript for StaffGradedAssignmentXBlock. */
-function StaffGradedAssignmentXBlock(runtime, element) {
+async function StaffGradedAssignmentXBlock(runtime, element) {
   function xblock($, _) {
     var uploadUrl = runtime.handlerUrl(element, 'upload_assignment');
     var finalizeUploadUrl = runtime.handlerUrl(element, 'finalize_uploaded_assignment');
@@ -409,7 +409,7 @@ function StaffGradedAssignmentXBlock(runtime, element) {
 
 
     function sendResizeMessage(height) {
-      // This blocks checks to see if the xBlock is part 
+      // This blocks checks to see if the xBlock is part
       // of Learning MFE
       if (window.parent !== window) {
         window.parent.postMessage({
@@ -474,13 +474,30 @@ function StaffGradedAssignmentXBlock(runtime, element) {
     return deferred.promise();
   }
 
-  function loadjs(url) {
-    $('<script>')
-      .attr('type', 'text/javascript')
-      .attr('src', window.baseUrl + url)
-      .appendTo(element);
-  }
+  function loadjs(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true; // Essential for non-blocking loading
 
+      // Resolve the promise when the script is successfully loaded
+      script.onload = () => {
+        console.log(`Script loaded: ${src}`);
+        resolve(script);
+      };
+
+      // Reject the promise if there's an error loading the script
+      script.onerror = () => {
+        const errorMsg = `Failed to load script: ${src}`;
+        console.error(errorMsg);
+        reject(new Error(errorMsg));
+      };
+
+      // Append the script to the document body or head
+      // Appending to head is often preferred for libraries
+      document.head.appendChild(script);
+    });
+  }
   if (require === undefined) {
     /**
      * The LMS does not use require.js (although it loads it...) and
@@ -488,8 +505,12 @@ function StaffGradedAssignmentXBlock(runtime, element) {
      * jquery.ajaxfileupload instead.  But our XBlock uses
      * jquery.fileupload.
      */
-    loadjs('js/vendor/jQuery-File-Upload/js/jquery.iframe-transport.js');
-    loadjs('js/vendor/jQuery-File-Upload/js/jquery.fileupload.js');
+    baseUrl = window.baseUrl || '';
+    // Refactored code to wait for both jQuery File Upload dependencies
+    await Promise.all([
+      loadjs(baseUrl + 'js/vendor/jQuery-File-Upload/js/jquery.iframe-transport.js'),
+      loadjs(baseUrl + 'js/vendor/jQuery-File-Upload/js/jquery.fileupload.js'),
+    ]);
     xblock($, _);
   } else {
     /**
