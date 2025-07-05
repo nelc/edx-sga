@@ -493,9 +493,8 @@ async function StaffGradedAssignmentXBlock(runtime, element) {
         reject(new Error(errorMsg));
       };
 
-      // Append the script to the document body or head
-      // Appending to head is often preferred for libraries
-      document.head.appendChild(script);
+      // Append the script to the element
+      element.appendChild(script);
     });
   }
   if (require === undefined) {
