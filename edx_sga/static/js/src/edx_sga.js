@@ -1,5 +1,5 @@
 /* Javascript for StaffGradedAssignmentXBlock. */
-async function StaffGradedAssignmentXBlock(runtime, element) {
+function StaffGradedAssignmentXBlock(runtime, element) {
   function xblock($, _) {
     var uploadUrl = runtime.handlerUrl(element, 'upload_assignment');
     var finalizeUploadUrl = runtime.handlerUrl(element, 'finalize_uploaded_assignment');
@@ -506,11 +506,15 @@ async function StaffGradedAssignmentXBlock(runtime, element) {
      */
     baseUrl = window.baseUrl || '';
     // Refactored code to wait for both jQuery File Upload dependencies
-    await Promise.all([
+    Promise.all([
       loadjs(baseUrl + 'js/vendor/jQuery-File-Upload/js/jquery.iframe-transport.js'),
       loadjs(baseUrl + 'js/vendor/jQuery-File-Upload/js/jquery.fileupload.js'),
-    ]);
-    xblock($, _);
+    ]).then(() => {
+      xblock($, _);
+    }).catch((error) => {
+      // Handle any errors during loading
+      console.error("Error loading scripts:", error);
+    });
   } else {
     /**
      * Studio, on the other hand, uses require.js and already knows about
